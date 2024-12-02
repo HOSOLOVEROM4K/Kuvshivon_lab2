@@ -155,6 +155,8 @@ void editStation(vector<Station>& stations) {
     }
 }
 
+
+
 void showMenu() {
     cout << "\nМеню:\n"
         << "1. Добавить трубу\n"
@@ -168,6 +170,9 @@ void showMenu() {
         << "9. Загрузить данные из файла\n"
         << "0. Выход\n";
 }
+
+
+
 
 int main() {
     setlocale(LC_ALL, "RU");
