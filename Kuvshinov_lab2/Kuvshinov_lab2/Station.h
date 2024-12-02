@@ -1,4 +1,3 @@
-#pragma once
 #ifndef STATION_H
 #define STATION_H
 
@@ -6,9 +5,11 @@
 #include <iostream>
 #include <fstream>
 
+using namespace std;
+
 class Station {
 private:
-    std::string name;
+    string name;
     int total_workshops;
     int working_workshops;
     double efficiency;
@@ -18,8 +19,8 @@ public:
     void input();
     void output() const;
     void editWorkshops();
-    void saveToFile(std::ofstream& out) const;
-    void loadFromFile(std::ifstream& in);
+    void saveToFile(ofstream& out) const;
+    void loadFromFile(ifstream& in);
 };
 
 #endif

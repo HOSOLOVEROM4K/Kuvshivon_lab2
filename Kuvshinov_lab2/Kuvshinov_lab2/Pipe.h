@@ -1,4 +1,3 @@
-#pragma once
 #ifndef PIPE_H
 #define PIPE_H
 
@@ -6,9 +5,11 @@
 #include <iostream>
 #include <fstream>
 
+using namespace std;
+
 class Pipe {
 private:
-    std::string name;
+    string name;
     double length;
     double diameter;
     bool in_repair;
@@ -18,8 +19,8 @@ public:
     void input();
     void output() const;
     void editRepairStatus();
-    void saveToFile(std::ofstream& out) const;
-    void loadFromFile(std::ifstream& in);
+    void saveToFile(ofstream& out) const;
+    void loadFromFile(ifstream& in);
 };
 
 #endif
