@@ -2,12 +2,48 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include "Pipe.h"
 #include "Station.h"
 
 using namespace std;
 
+// Проверка уникальности ID
+bool isUniqueId(int id, const vector<Pipe>& pipes, const vector<Station>& stations) {
+    // Проверяем ID среди труб
+    for (const auto& pipe : pipes) {
+        if (pipe.getId() == id) {
+            return false;
+        }
+    }
 
+    // Проверяем ID среди станций
+    for (const auto& station : stations) {
+        if (station.getId() == id) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Получение уникального ID от пользователя
+int getUniqueId(const vector<Pipe>& pipes, const vector<Station>& stations) {
+    int id;
+    while (true) {
+        cout << "Введите уникальный ID: ";
+        cin >> id;
+
+        if (isUniqueId(id, pipes, stations)) {
+            return id; // ID уникален
+        }
+        else {
+            cout << "Ошибка: ID уже используется. Попробуйте снова.\n";
+        }
+    }
+}
+
+// Функция для проверки корректности выбора действия
 int getValidMenuChoice() {
     string input;
     int choice;
@@ -31,21 +67,35 @@ int getValidMenuChoice() {
     }
 }
 
+// Остальные функции работы с объектами остаются прежними
+void showAllObjects(const vector<Pipe>& pipes, const vector<Station>& stations) {
+    cout << "\nСписок труб:\n";
+    for (const auto& pipe : pipes) {
+        pipe.output();
+    }
+    cout << "\nСписок КС:\n";
+    for (const auto& station : stations) {
+        station.output();
+    }
+}
 
 void deletePipe(vector<Pipe>& pipes) {
     if (pipes.empty()) {
         cout << "Нет труб для удаления.\n";
         return;
     }
-    cout << "Введите номер трубы для удаления: ";
-    size_t index;
-    cin >> index;
-    if (index > 0 && index <= pipes.size()) {
-        pipes.erase(pipes.begin() + index - 1);
+
+    cout << "Введите ID трубы для удаления: ";
+    int id;
+    cin >> id;
+
+    auto it = find_if(pipes.begin(), pipes.end(), [id](const Pipe& p) { return p.getId() == id; });
+    if (it != pipes.end()) {
+        pipes.erase(it);
         cout << "Труба удалена.\n";
     }
     else {
-        cout << "Ошибка: Неверный номер трубы.\n";
+        cout << "Ошибка: Труба с таким ID не найдена.\n";
     }
 }
 
@@ -54,28 +104,18 @@ void deleteStation(vector<Station>& stations) {
         cout << "Нет КС для удаления.\n";
         return;
     }
-    cout << "Введите номер КС для удаления: ";
-    size_t index;
-    cin >> index;
-    if (index > 0 && index <= stations.size()) {
-        stations.erase(stations.begin() + index - 1);
+
+    cout << "Введите ID КС для удаления: ";
+    int id;
+    cin >> id;
+
+    auto it = find_if(stations.begin(), stations.end(), [id](const Station& s) { return s.getId() == id; });
+    if (it != stations.end()) {
+        stations.erase(it);
         cout << "КС удалена.\n";
     }
     else {
-        cout << "Ошибка: Неверный номер КС.\n";
-    }
-}
-
-void showAllObjects(const vector<Pipe>& pipes, const vector<Station>& stations) {
-    cout << "\nСписок труб:\n";
-    for (size_t i = 0; i < pipes.size(); ++i) {
-        cout << i + 1 << ". ";
-        pipes[i].output();
-    }
-    cout << "\nСписок КС:\n";
-    for (size_t i = 0; i < stations.size(); ++i) {
-        cout << i + 1 << ". ";
-        stations[i].output();
+        cout << "Ошибка: КС с таким ID не найдена.\n";
     }
 }
 
@@ -84,14 +124,16 @@ void editPipe(vector<Pipe>& pipes) {
         cout << "Нет труб для редактирования.\n";
         return;
     }
-    cout << "Введите номер трубы для редактирования: ";
-    size_t index;
-    cin >> index;
-    if (index > 0 && index <= pipes.size()) {
-        pipes[index - 1].editRepairStatus();
+    cout << "Введите ID трубы для редактирования: ";
+    int id;
+    cin >> id;
+
+    auto it = find_if(pipes.begin(), pipes.end(), [id](const Pipe& p) { return p.getId() == id; });
+    if (it != pipes.end()) {
+        it->editRepairStatus();
     }
     else {
-        cout << "Ошибка: Неверный номер трубы.\n";
+        cout << "Ошибка: Труба с таким ID не найдена.\n";
     }
 }
 
@@ -100,14 +142,16 @@ void editStation(vector<Station>& stations) {
         cout << "Нет КС для редактирования.\n";
         return;
     }
-    cout << "Введите номер КС для редактирования: ";
-    size_t index;
-    cin >> index;
-    if (index > 0 && index <= stations.size()) {
-        stations[index - 1].editWorkshops();
+    cout << "Введите ID КС для редактирования: ";
+    int id;
+    cin >> id;
+
+    auto it = find_if(stations.begin(), stations.end(), [id](const Station& s) { return s.getId() == id; });
+    if (it != stations.end()) {
+        it->editWorkshops();
     }
     else {
-        cout << "Ошибка: Неверный номер КС.\n";
+        cout << "Ошибка: КС с таким ID не найдена.\n";
     }
 }
 
@@ -133,18 +177,19 @@ int main() {
     while (true) {
         showMenu();
 
-        
         int choice = getValidMenuChoice();
 
         switch (choice) {
         case 1: {
-            Pipe p;
+            int id = getUniqueId(pipes, stations); // Получение уникального ID
+            Pipe p(id); // Конструктор принимает ID
             p.input();
             pipes.push_back(p);
             break;
         }
         case 2: {
-            Station s;
+            int id = getUniqueId(pipes, stations); // Получение уникального ID
+            Station s(id); // Конструктор принимает ID
             s.input();
             stations.push_back(s);
             break;

@@ -1,59 +1,62 @@
 #include "Station.h"
+#include <string>
 
-Station::Station() : name(""), total_workshops(0), working_workshops(0), efficiency(0) {}
+using namespace std;
 
 void Station::input() {
     cout << "Введите название КС: ";
-    cin.ignore();
+    cin.ignore(); // Очистка буфера после предыдущего ввода
     getline(cin, name);
 
     cout << "Введите общее количество цехов: ";
-    while (!(cin >> total_workshops) || total_workshops <= 0) {
-        cout << "Ошибка! Введите положительное целое число: ";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
+    cin >> totalWorkshops;
 
-    cout << "Введите количество работающих цехов: ";
-    while (!(cin >> working_workshops) || working_workshops < 0 || working_workshops > total_workshops) {
-        cout << "Ошибка! Введите число от 0 до " << total_workshops << ": ";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
+    do {
+        cout << "Введите количество работающих цехов: ";
+        cin >> workingWorkshops;
+        if (workingWorkshops > totalWorkshops) {
+            cout << "Ошибка: Рабочих цехов не может быть больше общего количества.\n";
+        }
+    } while (workingWorkshops > totalWorkshops);
 
-    cout << "Введите эффективность (0.0 - 100.0): ";
-    while (!(cin >> efficiency) || efficiency < 0.0 || efficiency > 100.0) {
-        cout << "Ошибка! Введите число от 0.0 до 100.0: ";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
+    cout << "Введите эффективность КС: ";
+    cin >> efficiency;
 }
 
 void Station::output() const {
-    cout << "КС: " << name
-        << "\nОбщее количество цехов: " << total_workshops
-        << "\nРаботающие цехи: " << working_workshops
-        << "\nЭффективность: " << efficiency << "%\n";
+    cout << "КС ID: " << id << "\n"
+        << "Название: " << name << "\n"
+        << "Общее количество цехов: " << totalWorkshops << "\n"
+        << "Работающих цехов: " << workingWorkshops << "\n"
+        << "Эффективность: " << efficiency << "\n";
 }
 
 void Station::editWorkshops() {
-    cout << "Введите новое количество работающих цехов (от 0 до " << total_workshops << "): ";
-    while (!(cin >> working_workshops) || working_workshops < 0 || working_workshops > total_workshops) {
-        cout << "Ошибка! Введите число от 0 до " << total_workshops << ": ";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
+    cout << "Текущее количество работающих цехов: " << workingWorkshops << "\n";
+    cout << "Введите новое количество работающих цехов: ";
+
+    int newWorkingWorkshops;
+    do {
+        cin >> newWorkingWorkshops;
+        if (newWorkingWorkshops > totalWorkshops) {
+            cout << "Ошибка: Рабочих цехов не может быть больше общего количества.\n";
+        }
+    } while (newWorkingWorkshops > totalWorkshops);
+
+    workingWorkshops = newWorkingWorkshops;
 }
 
 void Station::saveToFile(ofstream& out) const {
-    out << name << '\n'
-        << total_workshops << '\n'
-        << working_workshops << '\n'
-        << efficiency << '\n';
+    out << id << "\n"
+        << name << "\n"
+        << totalWorkshops << "\n"
+        << workingWorkshops << "\n"
+        << efficiency << "\n";
 }
 
 void Station::loadFromFile(ifstream& in) {
-    in.ignore();
+    in >> id;
+    in.ignore(); // Очистка символа новой строки перед чтением строки
     getline(in, name);
-    in >> total_workshops >> working_workshops >> efficiency;
+    in >> totalWorkshops >> workingWorkshops >> efficiency;
 }

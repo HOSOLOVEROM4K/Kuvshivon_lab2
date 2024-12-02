@@ -1,58 +1,48 @@
 #include "Pipe.h"
+#include <string>
 
-Pipe::Pipe() : name(""), length(0), diameter(0), in_repair(false) {}
+using namespace std;
 
 void Pipe::input() {
     cout << "Введите название трубы: ";
-    cin.ignore();
+    cin.ignore(); // Очистка буфера после предыдущего ввода
     getline(cin, name);
 
-    cout << "Введите длину трубы (км): ";
-    while (!(cin >> length) || length <= 0) {
-        cout << "Ошибка! Введите положительное число: ";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
+    cout << "Введите длину трубы: ";
+    cin >> length;
 
-    cout << "Введите диаметр трубы (м): ";
-    while (!(cin >> diameter) || diameter <= 0) {
-        cout << "Ошибка! Введите положительное число: ";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
+    cout << "Введите диаметр трубы: ";
+    cin >> diameter;
 
-    cout << "Труба в ремонте? (1 - Да, 0 - Нет): ";
-    int status;
-    while (!(cin >> status) || (status != 0 && status != 1)) {
-        cout << "Ошибка! Введите 1 (Да) или 0 (Нет): ";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
-    in_repair = (status == 1);
+    cout << "Труба в ремонте? (1 - да, 0 - нет): ";
+    cin >> inRepair;
 }
 
 void Pipe::output() const {
-    cout << "Труба: " << name
-        << "\nДлина: " << length << " км"
-        << "\nДиаметр: " << diameter << " м"
-        << "\nСтатус ремонта: " << (in_repair ? "В ремонте" : "Не в ремонте") << "\n";
+    cout << "Труба ID: " << id << "\n"
+        << "Название: " << name << "\n"
+        << "Длина: " << length << "\n"
+        << "Диаметр: " << diameter << "\n"
+        << "Статус ремонта: " << (inRepair ? "В ремонте" : "Не в ремонте") << "\n";
 }
 
 void Pipe::editRepairStatus() {
-    in_repair = !in_repair;
-    cout << "Статус ремонта изменён. Теперь труба: "
-        << (in_repair ? "В ремонте" : "Не в ремонте") << "\n";
+    cout << "Текущий статус ремонта: " << (inRepair ? "В ремонте" : "Не в ремонте") << "\n";
+    cout << "Изменить статус ремонта? (1 - да, 0 - нет): ";
+    cin >> inRepair;
 }
 
 void Pipe::saveToFile(ofstream& out) const {
-    out << name << '\n'
-        << length << '\n'
-        << diameter << '\n'
-        << in_repair << '\n';
+    out << id << "\n"
+        << name << "\n"
+        << length << "\n"
+        << diameter << "\n"
+        << inRepair << "\n";
 }
 
 void Pipe::loadFromFile(ifstream& in) {
-    in.ignore();
+    in >> id;
+    in.ignore(); // Очистка символа новой строки перед чтением строки
     getline(in, name);
-    in >> length >> diameter >> in_repair;
+    in >> length >> diameter >> inRepair;
 }

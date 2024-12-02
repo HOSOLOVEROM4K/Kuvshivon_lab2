@@ -1,26 +1,41 @@
 #ifndef STATION_H
 #define STATION_H
 
-#include <string>
 #include <iostream>
 #include <fstream>
 
-using namespace std;
-
 class Station {
 private:
-    string name;
-    int total_workshops;
-    int working_workshops;
-    double efficiency;
+    int id;                     // Уникальный идентификатор
+    std::string name;           // Название
+    int totalWorkshops;         // Общее количество цехов
+    int workingWorkshops;       // Количество работающих цехов
+    double efficiency;          // Эффективность
 
 public:
-    Station();
+    // Конструктор по умолчанию
+    Station() : id(0), name(""), totalWorkshops(0), workingWorkshops(0), efficiency(0) {}
+
+    // Конструктор с ID
+    Station(int id) : id(id), name(""), totalWorkshops(0), workingWorkshops(0), efficiency(0) {}
+
+    // Геттер для ID
+    int getId() const { return id; }
+
+    // Ввод данных
     void input();
+
+    // Вывод данных
     void output() const;
+
+    // Редактирование цехов
     void editWorkshops();
-    void saveToFile(ofstream& out) const;
-    void loadFromFile(ifstream& in);
+
+    // Сохранение в файл
+    void saveToFile(std::ofstream& out) const;
+
+    // Загрузка из файла
+    void loadFromFile(std::ifstream& in);
 };
 
 #endif
