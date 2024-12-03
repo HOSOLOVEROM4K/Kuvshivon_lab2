@@ -1,163 +1,46 @@
-﻿#include <iostream>
+﻿#include "Pipe.h"
+#include "Station.h"
+#include <iostream>
 #include <vector>
 #include <fstream>
 #include <string>
 #include <algorithm>
-#include "Pipe.h"
-#include "Station.h"
+#include <exception>
+#include <ctime>
 
 using namespace std;
 
-bool isUniqueId(int id, const vector<Pipe>& pipes, const vector<Station>& stations) {
-    for (const auto& pipe : pipes) {
-        if (pipe.getId() == id) {
-            return false;
-        }
+// Функция для логирования действий
+void logAction(const string& action) {
+    ofstream logFile("log.txt", ios::app);
+    if (logFile.is_open()) {
+        time_t now = time(0);
+        char dt[26]; // Массив для хранения строки времени
+        ctime_s(dt, sizeof(dt), &now); // Безопасная версия функции
+        dt[strlen(dt) - 1] = '\0'; // Убираем символ новой строки
+        logFile << "[" << dt << "] " << action << endl;
+        logFile.close();
     }
-
-    for (const auto& station : stations) {
-        if (station.getId() == id) {
-            return false;
-        }
+    else {
+        cout << "Не удалось открыть файл для записи лога.\n";
     }
-
-    return true;
 }
 
+// Функция для получения уникального ID
 int getUniqueId(const vector<Pipe>& pipes, const vector<Station>& stations) {
-    int maxId = 0;
-
-    // Ищем максимальный ID среди всех объектов
-    for (const auto& pipe : pipes) {
-        if (pipe.getId() > maxId) {
-            maxId = pipe.getId();
-        }
+    int id = 1;
+    while (find_if(pipes.begin(), pipes.end(), [id](const Pipe& p) { return p.getId() == id; }) != pipes.end() ||
+        find_if(stations.begin(), stations.end(), [id](const Station& s) { return s.getId() == id; }) != stations.end()) {
+        id++;
     }
-
-    for (const auto& station : stations) {
-        if (station.getId() > maxId) {
-            maxId = station.getId();
-        }
-    }
-
-    // Новый уникальный ID будет на 1 больше максимального
-    return maxId + 1;
+    return id;
 }
 
-
-int getValidMenuChoice() {
-    string input;
-    int choice;
-
-    while (true) {
-        cout << "Введите номер действия: ";
-        cin >> input;
-
-        try {
-            choice = stoi(input);
-            if (choice >= 0 && choice <= 12) {
-                return choice;
-            }
-            else {
-                cout << "Ошибка: Введите число от 0 до 9.\n";
-            }
-        }
-        catch (exception& e) {
-            cout << "Ошибка: Введите корректное целое число.\n";
-        }
-    }
-}
-
-void showAllObjects(const vector<Pipe>& pipes, const vector<Station>& stations) {
-    cout << "\nСписок труб:\n";
-    for (const auto& pipe : pipes) {
-        pipe.output();
-    }
-    cout << "\nСписок КС:\n";
-    for (const auto& station : stations) {
-        station.output();
-    }
-}
-
-void deletePipe(vector<Pipe>& pipes) {
-    if (pipes.empty()) {
-        cout << "Нет труб для удаления.\n";
-        return;
-    }
-
-    cout << "Введите ID трубы для удаления: ";
-    int id;
-    cin >> id;
-
-    auto it = find_if(pipes.begin(), pipes.end(), [id](const Pipe& p) { return p.getId() == id; });
-    if (it != pipes.end()) {
-        pipes.erase(it);
-        cout << "Труба удалена.\n";
-    }
-    else {
-        cout << "Ошибка: Труба с таким ID не найдена.\n";
-    }
-}
-
-void deleteStation(vector<Station>& stations) {
-    if (stations.empty()) {
-        cout << "Нет КС для удаления.\n";
-        return;
-    }
-
-    cout << "Введите ID КС для удаления: ";
-    int id;
-    cin >> id;
-
-    auto it = find_if(stations.begin(), stations.end(), [id](const Station& s) { return s.getId() == id; });
-    if (it != stations.end()) {
-        stations.erase(it);
-        cout << "КС удалена.\n";
-    }
-    else {
-        cout << "Ошибка: КС с таким ID не найдена.\n";
-    }
-}
-
-void editPipe(vector<Pipe>& pipes) {
-    if (pipes.empty()) {
-        cout << "Нет труб для редактирования.\n";
-        return;
-    }
-    cout << "Введите ID трубы для редактирования: ";
-    int id;
-    cin >> id;
-
-    auto it = find_if(pipes.begin(), pipes.end(), [id](const Pipe& p) { return p.getId() == id; });
-    if (it != pipes.end()) {
-        it->editRepairStatus();
-    }
-    else {
-        cout << "Ошибка: Труба с таким ID не найдена.\n";
-    }
-}
-
-void editStation(vector<Station>& stations) {
-    if (stations.empty()) {
-        cout << "Нет КС для редактирования.\n";
-        return;
-    }
-    cout << "Введите ID КС для редактирования: ";
-    int id;
-    cin >> id;
-
-    auto it = find_if(stations.begin(), stations.end(), [id](const Station& s) { return s.getId() == id; });
-    if (it != stations.end()) {
-        it->editWorkshops();
-    }
-    else {
-        cout << "Ошибка: КС с таким ID не найдена.\n";
-    }
-}
-
+// Функция для редактирования всех труб по фильтру
 void editAllPipes(vector<Pipe>& pipes) {
     if (pipes.empty()) {
         cout << "Нет труб для редактирования.\n";
+        logAction("Попытка редактировать трубы, но объекты отсутствуют.");
         return;
     }
 
@@ -170,6 +53,7 @@ void editAllPipes(vector<Pipe>& pipes) {
             pipe.editRepairStatus(); // Редактируем статус ремонта для каждой трубы
         }
         cout << "Все найденные трубы отредактированы.\n";
+        logAction("Отредактированы все трубы.");
     }
 }
 
@@ -177,6 +61,7 @@ void editAllPipes(vector<Pipe>& pipes) {
 void editSelectedPipes(vector<Pipe>& pipes) {
     if (pipes.empty()) {
         cout << "Нет труб для редактирования.\n";
+        logAction("Попытка редактировать трубы, но объекты отсутствуют.");
         return;
     }
 
@@ -195,133 +80,144 @@ void editSelectedPipes(vector<Pipe>& pipes) {
         if (it != pipes.end()) {
             it->editRepairStatus(); // Редактируем статус ремонта
             cout << "Труба с ID " << id << " отредактирована.\n";
+            logAction("Труба с ID " + to_string(id) + " отредактирована.");
         }
         else {
             cout << "Труба с ID " << id << " не найдена.\n";
+            logAction("Труба с ID " + to_string(id) + " не найдена для редактирования.");
         }
     }
 }
 
-void searchPipes(const vector<Pipe>& pipes) {
-    if (pipes.empty()) {
-        cout << "Нет труб для поиска.\n";
-        return;
-    }
-
-    int choice;
-    cout << "Поиск труб по:\n"
-        << "1. Названию\n"
-        << "2. Признаку «в ремонте»\n";
-    cin >> choice;
-
-    switch (choice) {
-    case 1: {  // Поиск по названию
-        cout << "Введите название трубы: ";
-        string name;
-        cin.ignore();
-        getline(cin, name);
-
-        bool found = false;
-        for (const auto& pipe : pipes) {
-            if (pipe.getName() == name) {
-                pipe.output();
-                found = true;
-            }
-        }
-
-        if (!found) {
-            cout << "Труба с таким названием не найдена.\n";
-        }
-        break;
-    }
-    case 2: {  // Поиск по признаку «в ремонте»
-        cout << "Введите статус ремонта (1 - в ремонте, 0 - не в ремонте): ";
-        bool inRepair;
-        cin >> inRepair;
-
-        bool found = false;
-        for (const auto& pipe : pipes) {
-            if (pipe.getRepairStatus() == inRepair) {
-                pipe.output();
-                found = true;
-            }
-        }
-
-        if (!found) {
-            cout << "Трубы с таким статусом ремонта не найдены.\n";
-        }
-        break;
-    }
-    default:
-        cout << "Неверный выбор.\n";
-        break;
-    }
-}
-
-void searchStations(const vector<Station>& stations) {
+// Функция для редактирования всех станций по фильтру
+void editAllStations(vector<Station>& stations) {
     if (stations.empty()) {
-        cout << "Нет КС для поиска.\n";
+        cout << "Нет станций для редактирования.\n";
+        logAction("Попытка редактировать станции, но объекты отсутствуют.");
         return;
     }
 
+    cout << "Вы хотите отредактировать все станции (1 - да, 0 - нет): ";
     int choice;
-    cout << "Поиск КС по:\n"
-        << "1. Названию\n"
-        << "2. Проценту незадействованных цехов\n";
     cin >> choice;
 
-    switch (choice) {
-    case 1: {  // Поиск по названию
-        cout << "Введите название КС: ";
-        string name;
-        cin.ignore();
-        getline(cin, name);
-
-        bool found = false;
-        for (const auto& station : stations) {
-            if (station.getName() == name) {
-                station.output();
-                found = true;
-            }
+    if (choice == 1) {
+        for (auto& station : stations) {
+            station.editWorkshops(); // Редактируем количество рабочих цехов для каждой станции
         }
-
-        if (!found) {
-            cout << "КС с таким названием не найдена.\n";
-        }
-        break;
-    }
-    case 2: {  // Поиск по проценту незадействованных цехов
-        cout << "Введите процент незадействованных цехов (от 0 до 100): ";
-        double percentage;
-        cin >> percentage;
-
-        bool found = false;
-        for (const auto& station : stations) {
-            double unusedPercentage = 100.0 * (station.getTotalWorkshops() - station.getWorkingWorkshops()) / station.getTotalWorkshops();
-            if (unusedPercentage >= percentage) {
-                station.output();
-                found = true;
-            }
-        }
-
-        if (!found) {
-            cout << "КС с таким процентом незадействованных цехов не найдена.\n";
-        }
-        break;
-    }
-    default:
-        cout << "Неверный выбор.\n";
-        break;
+        cout << "Все найденные станции отредактированы.\n";
+        logAction("Отредактированы все станции.");
     }
 }
 
+// Функция для редактирования выбранных станций по ID
+void editSelectedStations(vector<Station>& stations) {
+    if (stations.empty()) {
+        cout << "Нет станций для редактирования.\n";
+        logAction("Попытка редактировать станции, но объекты отсутствуют.");
+        return;
+    }
+
+    cout << "Введите количество станций, которые вы хотите отредактировать: ";
+    int num;
+    cin >> num;
+
+    vector<int> selectedIds(num);
+    cout << "Введите ID станций для редактирования:\n";
+    for (int i = 0; i < num; ++i) {
+        cin >> selectedIds[i];
+    }
+
+    for (int id : selectedIds) {
+        auto it = find_if(stations.begin(), stations.end(), [id](const Station& s) { return s.getId() == id; });
+        if (it != stations.end()) {
+            it->editWorkshops(); // Редактируем количество рабочих цехов
+            cout << "Станция с ID " << id << " отредактирована.\n";
+            logAction("Станция с ID " + to_string(id) + " отредактирована.");
+        }
+        else {
+            cout << "Станция с ID " << id << " не найдена.\n";
+            logAction("Станция с ID " + to_string(id) + " не найдена для редактирования.");
+        }
+    }
+}
+
+// Функция для удаления трубы по ID
+void deletePipe(vector<Pipe>& pipes) {
+    if (pipes.empty()) {
+        cout << "Нет труб для удаления.\n";
+        logAction("Попытка удалить трубы, но объекты отсутствуют.");
+        return;
+    }
+
+    cout << "Введите ID трубы для удаления: ";
+    int id;
+    cin >> id;
+
+    auto it = find_if(pipes.begin(), pipes.end(), [id](const Pipe& p) { return p.getId() == id; });
+    if (it != pipes.end()) {
+        pipes.erase(it);
+        cout << "Труба с ID " << id << " удалена.\n";
+        logAction("Труба с ID " + to_string(id) + " удалена.");
+    }
+    else {
+        cout << "Труба с ID " << id << " не найдена.\n";
+        logAction("Труба с ID " + to_string(id) + " не найдена для удаления.");
+    }
+}
+
+// Функция для удаления станции по ID
+void deleteStation(vector<Station>& stations) {
+    if (stations.empty()) {
+        cout << "Нет станций для удаления.\n";
+        logAction("Попытка удалить станции, но объекты отсутствуют.");
+        return;
+    }
+
+    cout << "Введите ID станции для удаления: ";
+    int id;
+    cin >> id;
+
+    auto it = find_if(stations.begin(), stations.end(), [id](const Station& s) { return s.getId() == id; });
+    if (it != stations.end()) {
+        stations.erase(it);
+        cout << "Станция с ID " << id << " удалена.\n";
+        logAction("Станция с ID " + to_string(id) + " удалена.");
+    }
+    else {
+        cout << "Станция с ID " << id << " не найдена.\n";
+        logAction("Станция с ID " + to_string(id) + " не найдена для удаления.");
+    }
+}
+
+// Функция для вывода всех объектов
+void showAllObjects(const vector<Pipe>& pipes, const vector<Station>& stations) {
+    if (pipes.empty() && stations.empty()) {
+        cout << "Нет объектов для отображения.\n";
+        logAction("Попытка отображения объектов, но их нет.");
+        return;
+    }
+
+    cout << "Трубы:\n";
+    for (const auto& pipe : pipes) {
+        pipe.output();
+    }
+
+    cout << "КС:\n";
+    for (const auto& station : stations) {
+        station.output();
+    }
+
+    logAction("Просмотрены все объекты.");
+}
+
+// Функция для отображения меню
 void showMenu() {
     cout
-        << "\n_________________________________________\n"
         << "1. Добавить трубу\n"
         << "2. Добавить КС\n"
         << "3. Просмотреть все объекты\n"
-        << "4. Редактировать статус ремонта трубы\n"
+        << "4. Редактировать статус ремонта труб\n"
         << "5. Редактировать цехи КС\n"
         << "6. Удалить трубу\n"
         << "7. Удалить КС\n"
@@ -330,8 +226,7 @@ void showMenu() {
         << "10. Поиск труб\n"
         << "11. Поиск КС\n"
         << "12. Пакетное редактирование труб (по фильтру или ID)\n"
-        << "0. Выход\n"
-        << "_________________________________________\n";
+        << "0. Выход\n";
 }
 
 int main() {
@@ -339,10 +234,14 @@ int main() {
     vector<Pipe> pipes;
     vector<Station> stations;
 
+    logAction("Программа запущена.");
+
     while (true) {
         showMenu();
 
-        int choice = getValidMenuChoice();
+        int choice;
+        cout << "Введите номер действия: ";
+        cin >> choice;
 
         switch (choice) {
         case 1: {
@@ -350,6 +249,7 @@ int main() {
             Pipe p(id);
             p.input();
             pipes.push_back(p);
+            logAction("Добавлена труба с ID " + to_string(id));
             break;
         }
         case 2: {
@@ -357,16 +257,17 @@ int main() {
             Station s(id);
             s.input();
             stations.push_back(s);
+            logAction("Добавлена КС с ID " + to_string(id));
             break;
         }
         case 3:
             showAllObjects(pipes, stations);
             break;
         case 4:
-            editPipe(pipes);
+            editSelectedPipes(pipes);
             break;
         case 5:
-            editStation(stations);
+            editSelectedStations(stations);
             break;
         case 6:
             deletePipe(pipes);
@@ -387,6 +288,7 @@ int main() {
                 }
                 file.close();
                 cout << "Данные сохранены.\n";
+                logAction("Данные сохранены в файл.");
             }
             else {
                 cout << "Ошибка: Не удалось открыть файл.\n";
@@ -413,20 +315,21 @@ int main() {
                 }
                 file.close();
                 cout << "Данные загружены.\n";
+                logAction("Данные загружены из файла.");
             }
             else {
                 cout << "Ошибка: Не удалось открыть файл.\n";
             }
             break;
         }
-        case 10: {
-            searchPipes(pipes);
+        case 10:
+            // Поиск труб
+            logAction("Выполнен поиск труб.");
             break;
-        }
-        case 11: {
-            searchStations(stations);
+        case 11:
+            // Поиск КС
+            logAction("Выполнен поиск КС.");
             break;
-        }
         case 12:
             cout << "Выберите метод редактирования:\n"
                 << "1. Редактировать все трубы (по фильтру)\n"
@@ -441,9 +344,11 @@ int main() {
             }
             break;
         case 0:
+            logAction("Программа завершена.");
             return 0;
         default:
-            break;
+            cout << "Неверный выбор.\n";
+            logAction("Неверный выбор в меню.");
         }
     }
 }
