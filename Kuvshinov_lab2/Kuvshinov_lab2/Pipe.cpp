@@ -1,18 +1,43 @@
 #include "Pipe.h"
+#include <iostream>
 #include <string>
 
 using namespace std;
 
 void Pipe::input() {
     cout << "Введите название трубы: ";
-    cin.ignore(); // Очистка буфера после предыдущего ввода
+    cin.ignore();
     getline(cin, name);
 
-    cout << "Введите длину трубы: ";
-    cin >> length;
+    // Ввод длины трубы с проверкой на корректность
+    while (true) {
+        cout << "Введите длину трубы: ";
+        cin >> length;
 
-    cout << "Введите диаметр трубы: ";
-    cin >> diameter;
+        if (cin.fail()) {  // Проверка на ошибку ввода
+            cin.clear();  // Сброс флага ошибки
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Очистка буфера ввода
+            cout << "Ошибка: Введите корректное число для длины трубы.\n";
+        }
+        else {
+            break;  // Прерывание цикла, если ввод корректен
+        }
+    }
+
+    // Ввод диаметра трубы с проверкой на корректность
+    while (true) {
+        cout << "Введите диаметр трубы: ";
+        cin >> diameter;
+
+        if (cin.fail()) {  // Проверка на ошибку ввода
+            cin.clear();  // Сброс флага ошибки
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Очистка буфера ввода
+            cout << "Ошибка: Введите корректное число для диаметра трубы.\n";
+        }
+        else {
+            break;  // Прерывание цикла, если ввод корректен
+        }
+    }
 
     cout << "Труба в ремонте? (1 - да, 0 - нет): ";
     cin >> inRepair;
@@ -42,7 +67,7 @@ void Pipe::saveToFile(ofstream& out) const {
 
 void Pipe::loadFromFile(ifstream& in) {
     in >> id;
-    in.ignore(); // Очистка символа новой строки перед чтением строки
+    in.ignore();
     getline(in, name);
     in >> length >> diameter >> inRepair;
 }

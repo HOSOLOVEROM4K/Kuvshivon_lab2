@@ -6,35 +6,22 @@
 
 class Pipe {
 private:
-    int id;                     // Уникальный идентификатор
-    std::string name;           // Название
-    double length;              // Длина
-    double diameter;            // Диаметр
-    bool inRepair;              // Признак "в ремонте"
+    int id;
+    std::string name;
+    double length;
+    double diameter;
+    bool inRepair;
 
 public:
-    // Конструктор по умолчанию
     Pipe() : id(0), name(""), length(0), diameter(0), inRepair(false) {}
-
-    // Конструктор с ID
     Pipe(int id) : id(id), name(""), length(0), diameter(0), inRepair(false) {}
-
-    // Геттер для ID
     int getId() const { return id; }
-
-    // Ввод данных
+    std::string getName() const { return name; } // Добавить, если используется в поиске
+    bool getRepairStatus() const { return inRepair; } // Добавлен метод для исправления ошибки
     void input();
-
-    // Вывод данных
     void output() const;
-
-    // Редактирование статуса ремонта
     void editRepairStatus();
-
-    // Сохранение в файл
     void saveToFile(std::ofstream& out) const;
-
-    // Загрузка из файла
     void loadFromFile(std::ifstream& in);
 };
 

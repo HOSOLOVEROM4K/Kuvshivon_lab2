@@ -6,35 +6,23 @@
 
 class Station {
 private:
-    int id;                     // Уникальный идентификатор
-    std::string name;           // Название
-    int totalWorkshops;         // Общее количество цехов
-    int workingWorkshops;       // Количество работающих цехов
-    double efficiency;          // Эффективность
+    int id;
+    std::string name;
+    int totalWorkshops;
+    int workingWorkshops;
+    double efficiency;
 
 public:
-    // Конструктор по умолчанию
     Station() : id(0), name(""), totalWorkshops(0), workingWorkshops(0), efficiency(0) {}
-
-    // Конструктор с ID
     Station(int id) : id(id), name(""), totalWorkshops(0), workingWorkshops(0), efficiency(0) {}
-
-    // Геттер для ID
     int getId() const { return id; }
-
-    // Ввод данных
+    std::string getName() const { return name; }  // Функция для получения названия КС
+    int getTotalWorkshops() const { return totalWorkshops; }  // Функция для получения общего числа цехов
+    int getWorkingWorkshops() const { return workingWorkshops; }  // Функция для получения числа работающих цехов
     void input();
-
-    // Вывод данных
     void output() const;
-
-    // Редактирование цехов
     void editWorkshops();
-
-    // Сохранение в файл
     void saveToFile(std::ofstream& out) const;
-
-    // Загрузка из файла
     void loadFromFile(std::ifstream& in);
 };
 

@@ -8,16 +8,13 @@
 
 using namespace std;
 
-// Проверка уникальности ID
 bool isUniqueId(int id, const vector<Pipe>& pipes, const vector<Station>& stations) {
-    // Проверяем ID среди труб
     for (const auto& pipe : pipes) {
         if (pipe.getId() == id) {
             return false;
         }
     }
 
-    // Проверяем ID среди станций
     for (const auto& station : stations) {
         if (station.getId() == id) {
             return false;
@@ -27,34 +24,38 @@ bool isUniqueId(int id, const vector<Pipe>& pipes, const vector<Station>& statio
     return true;
 }
 
-// Получение уникального ID от пользователя
 int getUniqueId(const vector<Pipe>& pipes, const vector<Station>& stations) {
-    int id;
-    while (true) {
-        cout << "Введите уникальный ID: ";
-        cin >> id;
+    int maxId = 0;
 
-        if (isUniqueId(id, pipes, stations)) {
-            return id; // ID уникален
-        }
-        else {
-            cout << "Ошибка: ID уже используется. Попробуйте снова.\n";
+    // Ищем максимальный ID среди всех объектов
+    for (const auto& pipe : pipes) {
+        if (pipe.getId() > maxId) {
+            maxId = pipe.getId();
         }
     }
+
+    for (const auto& station : stations) {
+        if (station.getId() > maxId) {
+            maxId = station.getId();
+        }
+    }
+
+    // Новый уникальный ID будет на 1 больше максимального
+    return maxId + 1;
 }
 
-// Функция для проверки корректности выбора действия
+
 int getValidMenuChoice() {
     string input;
     int choice;
 
     while (true) {
-        cout << "\nВведите номер действия: ";
+        cout << "Введите номер действия: ";
         cin >> input;
 
         try {
             choice = stoi(input);
-            if (choice >= 0 && choice <= 9) {
+            if (choice >= 0 && choice <= 12) {
                 return choice;
             }
             else {
@@ -67,7 +68,6 @@ int getValidMenuChoice() {
     }
 }
 
-// Остальные функции работы с объектами остаются прежними
 void showAllObjects(const vector<Pipe>& pipes, const vector<Station>& stations) {
     cout << "\nСписок труб:\n";
     for (const auto& pipe : pipes) {
@@ -155,10 +155,169 @@ void editStation(vector<Station>& stations) {
     }
 }
 
+void editAllPipes(vector<Pipe>& pipes) {
+    if (pipes.empty()) {
+        cout << "Нет труб для редактирования.\n";
+        return;
+    }
 
+    cout << "Вы хотите отредактировать все трубы (1 - да, 0 - нет): ";
+    int choice;
+    cin >> choice;
+
+    if (choice == 1) {
+        for (auto& pipe : pipes) {
+            pipe.editRepairStatus(); // Редактируем статус ремонта для каждой трубы
+        }
+        cout << "Все найденные трубы отредактированы.\n";
+    }
+}
+
+// Функция для редактирования выбранных труб по ID
+void editSelectedPipes(vector<Pipe>& pipes) {
+    if (pipes.empty()) {
+        cout << "Нет труб для редактирования.\n";
+        return;
+    }
+
+    cout << "Введите количество труб, которые вы хотите отредактировать: ";
+    int num;
+    cin >> num;
+
+    vector<int> selectedIds(num);
+    cout << "Введите ID труб для редактирования:\n";
+    for (int i = 0; i < num; ++i) {
+        cin >> selectedIds[i];
+    }
+
+    for (int id : selectedIds) {
+        auto it = find_if(pipes.begin(), pipes.end(), [id](const Pipe& p) { return p.getId() == id; });
+        if (it != pipes.end()) {
+            it->editRepairStatus(); // Редактируем статус ремонта
+            cout << "Труба с ID " << id << " отредактирована.\n";
+        }
+        else {
+            cout << "Труба с ID " << id << " не найдена.\n";
+        }
+    }
+}
+
+void searchPipes(const vector<Pipe>& pipes) {
+    if (pipes.empty()) {
+        cout << "Нет труб для поиска.\n";
+        return;
+    }
+
+    int choice;
+    cout << "Поиск труб по:\n"
+        << "1. Названию\n"
+        << "2. Признаку «в ремонте»\n";
+    cin >> choice;
+
+    switch (choice) {
+    case 1: {  // Поиск по названию
+        cout << "Введите название трубы: ";
+        string name;
+        cin.ignore();
+        getline(cin, name);
+
+        bool found = false;
+        for (const auto& pipe : pipes) {
+            if (pipe.getName() == name) {
+                pipe.output();
+                found = true;
+            }
+        }
+
+        if (!found) {
+            cout << "Труба с таким названием не найдена.\n";
+        }
+        break;
+    }
+    case 2: {  // Поиск по признаку «в ремонте»
+        cout << "Введите статус ремонта (1 - в ремонте, 0 - не в ремонте): ";
+        bool inRepair;
+        cin >> inRepair;
+
+        bool found = false;
+        for (const auto& pipe : pipes) {
+            if (pipe.getRepairStatus() == inRepair) {
+                pipe.output();
+                found = true;
+            }
+        }
+
+        if (!found) {
+            cout << "Трубы с таким статусом ремонта не найдены.\n";
+        }
+        break;
+    }
+    default:
+        cout << "Неверный выбор.\n";
+        break;
+    }
+}
+
+void searchStations(const vector<Station>& stations) {
+    if (stations.empty()) {
+        cout << "Нет КС для поиска.\n";
+        return;
+    }
+
+    int choice;
+    cout << "Поиск КС по:\n"
+        << "1. Названию\n"
+        << "2. Проценту незадействованных цехов\n";
+    cin >> choice;
+
+    switch (choice) {
+    case 1: {  // Поиск по названию
+        cout << "Введите название КС: ";
+        string name;
+        cin.ignore();
+        getline(cin, name);
+
+        bool found = false;
+        for (const auto& station : stations) {
+            if (station.getName() == name) {
+                station.output();
+                found = true;
+            }
+        }
+
+        if (!found) {
+            cout << "КС с таким названием не найдена.\n";
+        }
+        break;
+    }
+    case 2: {  // Поиск по проценту незадействованных цехов
+        cout << "Введите процент незадействованных цехов (от 0 до 100): ";
+        double percentage;
+        cin >> percentage;
+
+        bool found = false;
+        for (const auto& station : stations) {
+            double unusedPercentage = 100.0 * (station.getTotalWorkshops() - station.getWorkingWorkshops()) / station.getTotalWorkshops();
+            if (unusedPercentage >= percentage) {
+                station.output();
+                found = true;
+            }
+        }
+
+        if (!found) {
+            cout << "КС с таким процентом незадействованных цехов не найдена.\n";
+        }
+        break;
+    }
+    default:
+        cout << "Неверный выбор.\n";
+        break;
+    }
+}
 
 void showMenu() {
-    cout << "\nМеню:\n"
+    cout
+        << "\n_________________________________________\n"
         << "1. Добавить трубу\n"
         << "2. Добавить КС\n"
         << "3. Просмотреть все объекты\n"
@@ -168,11 +327,12 @@ void showMenu() {
         << "7. Удалить КС\n"
         << "8. Сохранить данные в файл\n"
         << "9. Загрузить данные из файла\n"
-        << "0. Выход\n";
+        << "10. Поиск труб\n"
+        << "11. Поиск КС\n"
+        << "12. Пакетное редактирование труб (по фильтру или ID)\n"
+        << "0. Выход\n"
+        << "_________________________________________\n";
 }
-
-
-
 
 int main() {
     setlocale(LC_ALL, "RU");
@@ -186,15 +346,15 @@ int main() {
 
         switch (choice) {
         case 1: {
-            int id = getUniqueId(pipes, stations); // Получение уникального ID
-            Pipe p(id); // Конструктор принимает ID
+            int id = getUniqueId(pipes, stations);
+            Pipe p(id);
             p.input();
             pipes.push_back(p);
             break;
         }
         case 2: {
-            int id = getUniqueId(pipes, stations); // Получение уникального ID
-            Station s(id); // Конструктор принимает ID
+            int id = getUniqueId(pipes, stations);
+            Station s(id);
             s.input();
             stations.push_back(s);
             break;
@@ -259,6 +419,27 @@ int main() {
             }
             break;
         }
+        case 10: {
+            searchPipes(pipes);
+            break;
+        }
+        case 11: {
+            searchStations(stations);
+            break;
+        }
+        case 12:
+            cout << "Выберите метод редактирования:\n"
+                << "1. Редактировать все трубы (по фильтру)\n"
+                << "2. Редактировать выбранные трубы по ID\n";
+            int subChoice;
+            cin >> subChoice;
+            if (subChoice == 1) {
+                editAllPipes(pipes);
+            }
+            else if (subChoice == 2) {
+                editSelectedPipes(pipes);
+            }
+            break;
         case 0:
             return 0;
         default:
