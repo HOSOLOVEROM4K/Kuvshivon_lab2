@@ -21,10 +21,10 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a30cea42-6136-4ea0-b3b3-2fe0ab4ca408}</ProjectGuid>
-    <RootNamespace>Kuvshinovlab2</RootNamespace>
+    <ProjectGuid>{cc4188ab-e1b5-414f-928c-07f92d3e1a6d}</ProjectGuid>
+    <RootNamespace>shaevlab</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Kuvshinov_lab2</ProjectName>
+    <ProjectName>Kuvshinov__lab2</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -128,13 +128,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Kuvshinov_lab2.cpp" />
-    <ClCompile Include="Pipe.cpp" />
-    <ClCompile Include="Station.cpp" />
+    <ClCompile Include="cs.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Pipe.h" />
-    <ClInclude Include="Station.h" />
+    <ClInclude Include="cs.h" />
+    <ClInclude Include="logs.h" />
+    <ClInclude Include="pipeline.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
